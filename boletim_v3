@@ -1,0 +1,646 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdbool.h>
+#include<ctype.h>
+#include<time.h> //clock(), CLOCKS_PER_SEC e clock_t
+
+#define TAM 3 //constante para tamanho do vetor
+
+typedef struct{
+    int cpf_1, cpf_2, cpf_3, cpf_4;
+    int dia, mes, ano;
+    int idade;
+    int cd_aluno;
+
+    char nome[20];
+    
+}Alunos;
+
+typedef struct{
+    int               status;  
+    int qtd_aulas_assistidas;   
+    float        notas_bim_1;  
+    float        notas_bim_2; 
+    
+}NotasAlunos;
+
+typedef struct{
+    Alunos aluno;
+    NotasAlunos n_aluno;
+    
+}Cadastro;
+
+char* cria_nome(){ //Criador de nomes aleatorios.
+    char* nomes[] = {"Joao", "Maria", "Pedro", "Ana", "Lucas", "Julia", "Gustavo", "Carla", "Felipe", "Renata"};
+    char* sobrenomes[] = {"Silva", "Santos", "Souza", "Costa", "Pereira", "Oliveira", "Rodrigues", "Almeida", "Ferreira", "Gomes"};
+    int n_nomes = sizeof(nomes) / sizeof(nomes[0]);
+    int n_sobrenomes = sizeof(sobrenomes) / sizeof(sobrenomes[0]);
+
+    char* nome_completo = malloc((strlen(nomes[rand() % n_nomes]) + strlen(sobrenomes[rand() % n_sobrenomes]) + 2) * sizeof(char)); // alocar espaço para a string do nome completo
+    sprintf(nome_completo, "%s %s", nomes[rand() % n_nomes], sobrenomes[rand() % n_sobrenomes]); // concatenar o nome e o sobrenome
+
+    return nome_completo; // retornar o nome completo gerado
+}
+
+char* readChar(char* string, int tamanho) {
+    if(fgets(string, tamanho, stdin) != NULL) {
+        /* Remove a nova linha (\n), caso ela tenha sido lida pelo fgets */
+        int indiceUltimoCaractere = strlen(string) - 1;
+        if(string[indiceUltimoCaractere] == '\n') {
+            string[indiceUltimoCaractere] = '\0';
+        }
+        return string;
+    }
+    printf("null");
+    return NULL;
+
+}
+
+Cadastro cadastro_automatico(){
+    Cadastro temp;
+
+    //----------------------------------------------------- Funcao para gerar dados.
+    int num_aleatorio_AULA(){
+        int num_temp = (rand() % 50);
+        return num_temp;
+    }
+    float num_notas(){
+        float num_temp = (float)((rand()%81)+20)/10;
+        return num_temp;
+    }
+    int resultado_satus(Cadastro temp){
+
+        float media = (temp.n_aluno.notas_bim_1 + temp.n_aluno.notas_bim_2)/2;
+        int media_frequencia = (temp.n_aluno.qtd_aulas_assistidas*100)/50; 
+
+        if (media >= 6.0 && media_frequencia >= 75){
+            return 2;
+        }
+        if (media >= 3.0 && media < 6.0 && media_frequencia >= 75){
+            return 1;
+        }
+        if (media < 3.0 || media_frequencia < 75){
+            return 0;
+        }
+    }
+    //------------------------------------------------------ Cadastro de informacoes.
+    strcpy(temp.aluno.nome, cria_nome());
+
+    temp.aluno.cpf_1 = rand()% 999;
+    temp.aluno.cpf_2 = rand()% 999;
+    temp.aluno.cpf_3 = rand()% 999;
+    temp.aluno.cpf_4 = rand()% 89 + 10;
+
+    temp.aluno.dia = rand()% 29 + 1;
+    temp.aluno.mes = rand()% 11 + 1;
+    temp.aluno.ano = 1990 + (rand()% 15);
+
+    temp.aluno.idade = 2023 - (temp.aluno.ano);
+
+    temp.aluno.cd_aluno =   (temp.aluno.dia  + temp.aluno.mes + temp.aluno.ano + temp.aluno.idade) +
+                            (temp.aluno.cpf_1 + temp.aluno.cpf_2 + temp.aluno.cpf_3 + temp.aluno.cpf_4);
+    
+
+    //----------------------------------------------------- Gerador de Notas, AulasAss. e status.
+    temp.n_aluno.qtd_aulas_assistidas = num_aleatorio_AULA();
+    temp.n_aluno.notas_bim_1 = num_notas();
+    temp.n_aluno.notas_bim_2 = num_notas();
+
+    temp.n_aluno.status = resultado_satus(temp);
+
+    return temp;
+}
+
+Cadastro ler_info_cadastro(){
+    Cadastro t;
+    system("cls");
+    
+    setbuf(stdin,NULL);
+    printf("|| Nome: ");
+    readChar(t.aluno.nome, 20);
+
+    printf("||  \n");
+
+    printf("|| CPF: [XXX].000.000-00 (Os 3 primeiros digitos) : ");
+    scanf("%d", &t.aluno.cpf_1);
+    printf("|| CPF: 000.[XXX].000-00 (Os 3 do meio digitos) : ");
+    scanf("%d", &t.aluno.cpf_2);
+    printf("|| CPF: 000.000.[XXX]-00 (Os 3 ultimos digitos) : ");
+    scanf("%d", &t.aluno.cpf_3);
+    printf("|| CPF: 000.000.000-[00] (Os 2 ultimos digitos) : ");
+    scanf("%d", &t.aluno.cpf_4);
+
+    printf("||  \n");
+
+    printf("|| DIA Nas. [aa]/../.... : ");
+    scanf("%d", &t.aluno.dia);
+    printf("|| MES Nas. aa/[mm]/.... : ");
+    scanf("%d", &t.aluno.mes);
+    printf("|| ANO Nas. aa/mm/[aaaa] : ");
+    scanf("%d", &t.aluno.ano);
+
+    t.aluno.cd_aluno = (t.aluno.dia  + t.aluno.mes + t.aluno.ano) + t.aluno.cpf_1;
+
+    printf("||  \n");
+    printf("|| Aluno incluido.\n\n");
+
+    return t;
+}
+
+Cadastro notas_aut(){
+    Cadastro temp;
+
+    //----------------------------------------------------- Funcao para gerar dados.
+    int num_aleatorio_AULA(){
+        int num_temp = (rand() % 50);
+        return num_temp;
+    }
+    float num_notas(){
+        float num_temp = (float)((rand()%81)+20)/10;
+        return num_temp;
+    }
+    int resultado_satus(Cadastro temp){
+
+        float media = (temp.n_aluno.notas_bim_1 + temp.n_aluno.notas_bim_2)/2;
+        int media_frequencia = (temp.n_aluno.qtd_aulas_assistidas*100)/50; 
+
+        if (media >= 6.0 && media_frequencia >= 75){
+            return 2;
+        }
+        if (media >= 3.0 && media < 6.0 && media_frequencia >= 75){
+            return 1;
+        }
+        if (media < 3.0 || media_frequencia < 75){
+            return 0;
+        }
+    }
+
+    //----------------------------------------------------- Gerador de Notas, AulasAss. e status.
+    temp.n_aluno.qtd_aulas_assistidas = num_aleatorio_AULA();
+    temp.n_aluno.notas_bim_1 = num_notas();
+    temp.n_aluno.notas_bim_2 = num_notas();
+
+    temp.n_aluno.status = resultado_satus(temp);
+
+    return temp;
+}
+
+void imprirCadastro(Cadastro temp){
+    printf("// Nome  : %-20s ", temp.aluno.nome);
+    printf("// CPF: %3d.%3d.%3d-%2d ", temp.aluno.cpf_1, temp.aluno.cpf_2, temp.aluno.cpf_3, temp.aluno.cpf_4);
+    printf("// Data Nas.: %2d/%2d/%4d ", temp.aluno.dia, temp.aluno.mes, temp.aluno.ano);
+    printf("// Codigo: %5d ", temp.aluno.cd_aluno);
+    printf("// Idade: %2d ", temp.aluno.idade);
+
+}
+
+void ordena_vetor(Cadastro *vetor, int tamanho) {
+  int ordenado = 0;
+  
+    while(!ordenado){
+        ordenado = 1;
+        for(int i=0; i<tamanho-1; i++) {
+            if(vetor[i].aluno.cd_aluno > vetor[i+1].aluno.cd_aluno) {
+                // troca os elementos adjacentes
+                Cadastro temp = vetor[i];
+                vetor[i] = vetor[i+1];
+                vetor[i+1] = temp;
+                        
+                ordenado = 0; // o vetor ainda não está ordenado
+            }
+        }
+    }
+}
+
+void dados_tabela(Cadastro temp){
+        char* espc_ = " ";
+            //Aluno    //Nota_1    //Nota_2
+        printf("| %5d %7s| %6.1f %4s| %6.1f %4s",
+        temp.aluno.cd_aluno, espc_, temp.n_aluno.notas_bim_1, espc_, temp.n_aluno.notas_bim_2, espc_);
+            //Aulas   //status
+        printf("| %10d %10s|%5d %2s|", 
+        temp.n_aluno.qtd_aulas_assistidas, espc_, temp.n_aluno.status, espc_);
+}
+void info_tabela(){
+        char* numero_aluno      = " Numero Aluno "; 
+        char* nota_bim_1        = " Nota Bim.1 ";
+        char* nota_bim_2        = " Nota Bim.2 ";
+        char* qtd_aula_asist    = " Qtd.Aulas Assistidas ";
+        char* status            = " Status ";
+
+        printf("|%s|%s|%s|%s|%s|", numero_aluno, nota_bim_1, nota_bim_2, qtd_aula_asist, status);
+}
+void largura_e(){
+        printf("||");
+        printf("    ");
+}
+void largura_d(){
+        printf("    "); //18 de largura
+        printf("|| \n");
+}
+void largura_de(int i){
+        printf("    "); //18 de largura
+        printf("|| Num: %d\n", i);
+}
+void risca(){
+        for (int b = 0; b < 74; b++){
+            printf("-");
+        }            
+}
+
+void tela_principal(Cadastro *t, int cont){
+    if ( cont > 0 ){
+        largura_e();                              risca();                          largura_d();
+        largura_e();                        info_tabela();                          largura_d();
+        largura_e();                              risca();                          largura_d();
+        for(int i = 0; i < cont; i++){
+            largura_e();
+            dados_tabela(t[i]);
+            largura_de(i+1);
+        }
+        printf("\n|| Todos alunos listados. \n");
+        printf("|| ");
+        getchar();
+    }
+    if( cont == 0 ){
+        printf("\nNao tem nenhum aluno. Adicione pelo menos 1 aluno. ");
+        setbuf(stdin,NULL);
+        getchar();
+    }
+
+}
+
+int buscaBinaria(Cadastro lista[], int alunos){
+    int busca;
+
+    printf("\n\nBuscar -> [1]Codigo_aluno // [2]CPF // [3]Data Nas. // [4]Num: ");
+    scanf("%d", &busca);
+
+    //-------------------------------------- Busca binaria: Codigo aluno
+    if (busca == 1){
+        printf("\nBuscar -> [1]Codigo_aluno: ");
+        scanf("%d", &busca);
+
+        int baixo = 0;
+        int alto = alunos;
+
+        while(baixo <= alto){
+            int meio = (baixo + alto) / 2;
+            int bsc_temp = lista[meio].aluno.cd_aluno;
+            if(bsc_temp == busca){
+                return meio;
+            }
+            if (bsc_temp > busca) {
+                alto = meio - 1;
+            } else {
+                baixo = meio + 1;
+            }      
+            if(alto < baixo) return -1;
+        }
+    }
+
+    //-------------------------------------- Busca binaria: CPF
+    if (busca == 2){
+        int baixo = 0;
+        int alto = alunos;
+        int cpf_3pri, cpf_3meio, cpf_3ultimo, cpf_2;
+
+            printf("\nCPF: [XXX].000.000-00 (Os 3 primeiros digitos) : ");
+            scanf("%d", &cpf_3pri);
+            printf("\nCPF: 000.[XXX].000-00 (Os 3 do meio digitos) : ");
+            scanf("%d", &cpf_3meio);
+            printf("\nCPF: 000.000.[XXX]-00 (Os 3 ultimos digitos) : ");
+            scanf("%d", &cpf_3ultimo);
+            printf("\nCPF: 000.000.000-[00] (Os 2 ultimos digitos) : ");
+            scanf("%d", &cpf_2);
+
+        while(baixo <= alto){
+            int meio = (baixo + alto) / 2;
+            int bsc_1 = lista[meio].aluno.cpf_1;
+            int bsc_2 = lista[meio].aluno.cpf_2;
+            int bsc_3 = lista[meio].aluno.cpf_3;
+            int bsc_4 = lista[meio].aluno.cpf_4;
+
+            if(bsc_1 == cpf_3pri && bsc_2 == cpf_3meio && bsc_3 == cpf_3ultimo && bsc_4 == cpf_2){
+                return meio;
+            }
+            if (bsc_1 > cpf_3pri) {
+                alto = meio - 1;
+            } else {
+                baixo = meio + 1;
+            }  
+            if(alto < baixo) return -1;    
+        }   
+    }
+
+    //-------------------------------------- Busca binaria: Data Nas.
+    if (busca == 3){
+        int baixo = 0;
+        int alto = alunos;
+        int dtn_dia, dtn_mes, dtn_ano;
+
+            printf("\nDIA Nas. [dd]/../.... : ");
+            scanf("%d", &dtn_dia);
+            printf("\nMES Nas. dd/[mm]/.... : ");
+            scanf("%d", &dtn_mes);
+            printf("\nANO Nas. dd/mm/[aaaa] : ");
+            scanf("%d", &dtn_ano);
+
+        while(baixo <= alto){
+            int meio = (baixo + alto) / 2;
+            int bsc_1 = lista[meio].aluno.dia;
+            int bsc_2 = lista[meio].aluno.mes;
+            int bsc_3 = lista[meio].aluno.ano;
+
+            if(bsc_1 == dtn_dia && bsc_2 == dtn_mes && bsc_3 == dtn_ano){   
+                return meio;
+            }
+            if(bsc_1 > dtn_dia){
+                alto = meio - 1;
+            } else {
+                baixo = meio + 1;
+            }     
+            if(alto < baixo) return -1;
+        }
+    }
+
+    //Buscar pelo id.
+    if (busca == 4){
+        int baixo = 0;
+        int alto = alunos;
+        int id;
+
+        printf("\nDigite o id: ");
+        scanf("%d", &id);
+
+        while(baixo <= alto){
+            int meio = (baixo + alto) / 2;
+            int bsc_1 = meio;
+
+            if(bsc_1 == id-1){   
+                return meio;
+            }
+            if(bsc_1 > id-1){
+                alto = meio - 1;
+            } else {
+                baixo = meio + 1;
+            }     
+            if(alto < baixo) return -1;
+        }
+    }
+}
+
+void alterar_aluno(Cadastro *sala_01, int x){
+    char resposta = 'n';
+    setbuf(stdin,NULL);
+
+    printf("\nDeseja trocar? s/n : ");
+    resposta = getchar();
+
+    if(toupper(resposta)=='S'){
+        printf("\n");
+        sala_01[x] = ler_info_cadastro();
+        sala_01[x] = notas_aut();
+
+        imprirCadastro(sala_01[x]);
+
+        printf("\nAluno alterado.");
+        setbuf(stdin,NULL);
+        getchar();
+    }
+}
+
+void deletar_aluno(Cadastro *sala_01, int x, int *contador){
+    char resposta = 'n';
+    setbuf(stdin,NULL);
+
+    printf("\nDeseja deletar? s/n : ");
+    resposta = getchar();
+
+    if(toupper(resposta)=='S'){
+        printf("\n");
+        
+        sala_01[x].aluno.cpf_1 = 0;
+        sala_01[x].aluno.cpf_2 = 0;
+        sala_01[x].aluno.cpf_3 = 0;
+        sala_01[x].aluno.cpf_4 = 0;
+        sala_01[x].aluno.dia   = 0;
+        sala_01[x].aluno.mes   = 0;
+        sala_01[x].aluno.ano   = 0;
+        sala_01[x].aluno.cd_aluno = 0;
+
+        sala_01[x].n_aluno.status = 0;
+        sala_01[x].n_aluno.qtd_aulas_assistidas = 0;
+        sala_01[x].n_aluno.notas_bim_1 = 0.0;
+        sala_01[x].n_aluno.notas_bim_2 = 0.0;
+
+        *contador -= 1;
+
+        printf("\nAluno deletado.");
+        setbuf(stdin,NULL);
+        getchar();
+    }
+}
+
+void cheka_status(Cadastro *sala_01, int i){
+    largura_e();
+    dados_tabela(sala_01[i]);
+    largura_de(i+1);
+
+}
+
+void bubbleSort (Cadastro v[TAM]) {
+    int a, b, aux;
+    for (a=TAM-1; a>=1; a--) {
+        for (b=0; b<a; b++) {
+            if (v[b].aluno.cd_aluno > v[b+1].aluno.cd_aluno) {
+                aux = v[b].aluno.cd_aluno;
+                v[b].aluno.cd_aluno = v[b+1].aluno.cd_aluno;
+                v[b+1].aluno.cd_aluno = aux;
+            }
+        }
+    }
+}
+
+int main(){
+    srand(time(NULL));
+    clock_t t; //variável para armazenar tempo
+    int p, r, a;
+    p = 0;
+    r = TAM;
+    
+    Cadastro sala_01[TAM];
+    int contador = 0;
+    int resp_user;
+
+    while(resp_user != 9){
+        do{
+            system("cls");
+            printf("||\t\t\t\t     ========================================     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [0] - PREENCHER ALEATORIO (TUDO)   ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [1] - Incluir_Aluno                ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [2] - Listar_Alunos                ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [3] - Alterar_Aluno                ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [4] - Deletar_Aluno                ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [5] - Alunos aprovados             ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [6] - Alunos em recuperacao        ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [7] - Alunos reprovados            ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [8] - Busca Binaria                ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     == [9] - Sair do programa             ==     \t\t\t\t||\n");
+            printf("||\t\t\t\t     ========================================     \t\t\t\t||\n");
+            printf("|| Digite uma opcao: [0-8]: ");
+            scanf("%d", &resp_user);
+
+        }while(resp_user < 0 || resp_user > 9);
+
+        switch(resp_user){
+            case 0: //Preencher tudo alatorio
+
+                for(int i = 0; i < TAM; i++){
+                    sala_01[i] = cadastro_automatico();
+                    contador += 1;
+                }
+                //Codigo do aluno: (dd + mm + aaaa) + ( 3 num. CPF );
+                ordena_vetor(sala_01, TAM);
+                // Sistema que ordena vetor, e não deixa criar um codigo aluno reptido.
+
+                printf("\nCadastro automatico, concluido com sucesso.");
+
+                setbuf(stdin,NULL);getchar();
+
+                break;
+            case 1: //Cadastrar
+                system("cls");
+                sala_01[contador] = ler_info_cadastro();
+
+                sala_01[contador] = notas_aut();
+                imprirCadastro(sala_01[contador]);
+
+                //Codigo do aluno:  Data Nas(dd + mm + aaaa + idade) + CPF( xxx + xxx + xxx + xx);
+                ordena_vetor(sala_01, TAM); 
+                // Sistema que ordena vetor, e não deixa criar um codigo aluno reptido.
+
+                contador += 1;
+
+                getchar();
+                break;
+
+            case 2: //Exibir todos os alunos.
+                system("cls");
+                tela_principal(sala_01, contador);
+                getchar();
+
+                break;
+
+            case 3: //Alterar.
+                system("cls");
+
+                int x;
+
+                x = buscaBinaria(sala_01, TAM);
+                
+                if (x > -1){
+                    imprirCadastro(sala_01[x]);
+
+                    alterar_aluno(sala_01, x);
+                }
+                else{printf("\nNao encontado");setbuf(stdin,NULL);getchar();}
+
+                break;
+            
+            case 4: //Deletar
+
+                system("cls");
+
+                int y;
+
+                y = buscaBinaria(sala_01, TAM);
+                
+                if (y > -1){
+                    imprirCadastro(sala_01[y]);
+
+                    deletar_aluno(sala_01, y, &contador);
+                }
+                else{printf("\nNao encontado");setbuf(stdin,NULL);getchar();}
+
+                break;
+
+            case 5: //Alunos aprovados
+                system("cls");
+                
+                largura_e();
+                info_tabela();
+                largura_d();
+                for ( int i = 0; i < TAM; i++){
+                    if (sala_01[i].n_aluno.status == 2){
+                        cheka_status(sala_01, i);
+                    }
+                }
+                printf("\nAlunos aprovados.");
+                
+                setbuf(stdin,NULL);getchar();
+
+                break;
+
+            case 6: //Alunos recuperacao
+                system("cls");
+                
+                largura_e();
+                info_tabela();
+                largura_d();
+                for ( int i = 0; i < TAM; i++){
+                    if (sala_01[i].n_aluno.status == 1){
+                        cheka_status(sala_01, i);
+                    }
+                }
+                printf("\nAlunos recuperacao.");
+
+                setbuf(stdin,NULL);getchar();
+
+                break;
+            
+            case 7: //Alunos reprovados
+                system("cls");
+                
+                largura_e();
+                info_tabela();
+                largura_d();
+                for ( int i = 0; i < TAM; i++){
+                    if (sala_01[i].n_aluno.status == 0){
+                        cheka_status(sala_01, i);
+                    }
+                }
+                printf("\nAlunos reprovados.");
+
+                setbuf(stdin,NULL);getchar();
+
+                break;
+            
+            case 8: //Busca Binaria.
+                system("cls");
+
+                int z;
+
+                z = buscaBinaria(sala_01, TAM);
+                
+                if (z > -1 && z < TAM){
+                    imprirCadastro(sala_01[z]);
+
+                    setbuf(stdin,NULL);getchar();
+                }
+                else{printf("\nNao encontado");setbuf(stdin,NULL);getchar();}
+
+                break;
+        }
+        //Verificando tempo de execução do bubble sort=> t2
+        t = clock(); //armazena tempo
+        bubbleSort(sala_01);
+        t = clock() - t; //tempo final - tempo inicial
+        //imprime o tempo na tela
+        printf("Tempo de execucao: %lf segundos", ((double)t)/((CLOCKS_PER_SEC))); //conversão para double
+
+        setbuf(stdin,NULL);getchar();
+    }
+    return 0;
+}
