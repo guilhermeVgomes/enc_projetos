@@ -1,0 +1,422 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<stdbool.h>
+#include<ctype.h>
+#include<time.h>
+
+#define LIMITE 50
+#define SL_MIN 1400
+
+typedef struct{
+    char    nome[20];
+    float   salario;
+    int     categoria; // 1-Gerenciar 2-Supervisao 3-Operacional
+    int     idade;
+
+}Cadastro;
+//------------------------------- Fonte: Saulo -----------------------------
+void clear(){
+    #ifdef __linux__
+        system("clear");
+    #elif _WIN32
+        system("cls");
+    #endif    
+}
+void ordenar(Cadastro vetor[], int qtdReg) {    
+           
+    Cadastro temp;
+   
+    for(int i = qtdReg; i >= 1; i--){
+       
+        for(int j = 0; j < i; j++){
+           
+            if (strcmp(vetor[j].nome, vetor[j + 1].nome) > 0) {    
+           
+                temp = vetor[j];
+               
+                vetor[j] = vetor[j + 1];
+               
+                vetor[j + 1] = temp;
+            }
+        }
+    }    
+}
+int pesquisar(Cadastro vetor[],int inicio, int fim, char *procurado) {
+   
+    if (fim < inicio) // Se isso ocorrer, significa que o nome não existe.
+       return -1;
+ 
+    int meio = (inicio + fim) / 2;  // calcula o meio.    
+   
+    int resultado = strcmp(vetor[meio].nome, procurado); // Retorna o índice do registro pesquisado
+   
+    if (resultado < 0)  // Refaz a pesquisa, analisando do meio+1 para o final
+       return pesquisar(vetor, meio + 1, fim, procurado);
+   
+    if (resultado > 0)  // Refaz a pesquisa, analisando do início até o meio-1
+       return pesquisar(vetor, inicio, meio - 1, procurado);  
+   
+    return meio;  // Caso não execute nenhum dos if's acima, encontramos o nome desejado
+}
+void cleanBuffer(){
+   
+    char lixo;
+    while ((lixo = getchar()) != '\n' && lixo != '\r' && lixo != '\036' && lixo != '\025' && lixo != EOF);
+    // Pesquisar por outras sequencias de escape em: https://en.wikipedia.org/wiki/Newline
+    /*
+    Another common problem is the use of '\n' when communicating using an Internet protocol
+    that mandates the use of ASCII CR+LF for ending lines.
+    Writing '\n' to a text mode stream works correctly on Windows systems, but produces only LF on Unix,
+    and something completely different on more exotic systems.
+    Using "\r\n" in binary mode is slightly better.
+    */
+}
+char* readChar(char* string, int tamanho) {
+    if(fgets(string, tamanho, stdin) != NULL) {
+        /* Remove a nova linha (\n), caso ela tenha sido lida pelo fgets */
+        int indiceUltimoCaractere = strlen(string) - 1;
+        if(string[indiceUltimoCaractere] == '\n') string[indiceUltimoCaractere] = '\0';        
+        return string;
+    }
+    return NULL;
+}
+//---------------------------------------------------------------------------
+
+Cadastro cadastro_automatico(){
+    Cadastro temp;
+
+    char* cria_nome(){ //Criador de nomes aleatorios.
+        char* nomes[] = {"Joao", "Maria", "Pedro", "Ana", "Lucas", "Julia", "Gustavo", "Carla", "Felipe", "Renata"};
+        char* sobrenomes[] = {"Silva", "Santos", "Souza", "Costa", "Pereira", "Oliveira", "Rodrigues", "Almeida", "Ferreira", "Gomes"};
+        int n_nomes = sizeof(nomes) / sizeof(nomes[0]);
+        int n_sobrenomes = sizeof(sobrenomes) / sizeof(sobrenomes[0]);
+
+        char* nome_completo = malloc((strlen(nomes[rand() % n_nomes]) + strlen(sobrenomes[rand() % n_sobrenomes]) + 2) * sizeof(char)); // alocar espaço para a string do nome completo
+        sprintf(nome_completo, "%s %s", nomes[rand() % n_nomes], sobrenomes[rand() % n_sobrenomes]); // concatenar o nome e o sobrenome
+
+        return nome_completo; // retornar o nome completo gerado
+    }
+    strcpy(temp.nome, cria_nome());
+
+    temp.categoria  = rand()% 3 + 1;
+    temp.idade      = (rand()% 32) + 18;
+
+    if(temp.categoria == 1){
+        temp.salario = (float)((rand()% 12000) + (rand()% 50000 + 50000))/10;
+    }
+    if(temp.categoria == 2){
+        temp.salario = (float)((rand()% 12000) + (rand()% 2500 + 25000))/10;
+    }
+    if(temp.categoria == 3){
+        temp.salario = (float)((rand()% 4000) + 12000)/10.3;
+    }
+
+    return temp;
+}
+Cadastro cadastro_manual(){
+    Cadastro temp;
+
+    printf("\n\tNome: ");
+    readChar(temp.nome, 20);
+
+    printf("\n\tIdade: ");
+    scanf("%d", &temp.idade);
+
+    printf("\n\tSalario: ");
+    scanf("%f", &temp.salario);
+
+    printf("\n\tCategoria: ");
+    scanf("%d", &temp.categoria);
+
+    getchar();
+    return temp;
+}
+void info_cadastro(Cadastro *peniel, int i){
+    printf(" == Nome : %-20s      \n", peniel[i].nome);
+    printf(" == Idade: %-20d      \n", peniel[i].idade);
+    printf(" == Salario: %.2f     \n", peniel[i].salario);
+    printf(" == Categoria: %-16d  \n\n", peniel[i].categoria);
+}
+
+void salarioPor_Categoria(Cadastro *peniel, int contador){
+    int x = 1;
+    float soma_total = 0;
+
+    do{
+        float soma = 0;
+
+        printf("\n====== Categoria: %d ======\n", x);
+        for(int i = 0; i < contador; i++){
+
+            if (peniel[i].categoria == x){
+                soma += peniel[i].salario;
+
+                info_cadastro(peniel, i);
+            }
+        }soma_total += soma;
+
+        printf("== Total de custo: R$ %.0f ================\n", soma);
+        x++;
+    }while(x < 4);
+
+    printf("\n\n Somando todas as categorias, despesas: R$ %.0f ", soma_total);
+
+}
+void fun_mais_novo(Cadastro *peniel, int contador){
+    int maior;
+    int menor;
+    int id_maior;
+    int id_menor;
+
+    for(int i = 0; i < contador; i++){
+        if (i == 0){
+            maior = peniel[i].idade;
+            id_maior = i;
+
+            menor = peniel[i].idade;
+            id_menor = i;
+        }
+        else{
+            if (peniel[i].idade > maior){
+                maior = peniel[i].idade;
+                id_maior = i;
+            }
+            if (peniel[i].idade < menor){
+                menor = peniel[i].idade;
+                id_menor = i;
+            }
+        }
+    }
+
+    printf("Funcionario mais velho: \n");
+    info_cadastro(peniel, id_maior);
+
+    printf("\nFuncionario mais novo: \n");
+    info_cadastro(peniel, id_menor);
+}
+void salarioPor_Categoria_MaiorMenor(Cadastro *peniel, int contador){
+    float maior;
+    float menor;
+    int id_maior;
+    int id_menor;
+
+    for(int i = 0; i < contador; i++){
+        if (i == 0){
+            maior = peniel[i].salario;
+            id_maior = i;
+
+            menor = peniel[i].salario;
+            id_menor = i;
+        }
+        else{
+            if (peniel[i].salario > maior){
+                maior = peniel[i].salario;
+                id_maior = i;
+            }
+            if (peniel[i].salario < menor){
+                menor = peniel[i].salario;
+                id_menor = i;
+            }
+        }
+    }
+
+    printf("Funcionario que mais ganha: \n");
+    info_cadastro(peniel, id_maior);
+
+    printf("\nFuncionario que menos ganha: \n");
+    info_cadastro(peniel, id_menor);
+}
+void mediaPor_Categoria_Idade(Cadastro *peniel, int contador){
+    int soma = 0;
+    for(int i = 0; i < contador; i++){
+        soma += peniel[i].idade;
+    }
+    soma /= contador;
+
+    printf("A media de idade e: %d", soma);
+}
+void qtdFun_Recebe_SlrMinimo(Cadastro *peniel, int contador){
+    printf("\t\t\tSalario minimo atualmente: %d \n\n", SL_MIN);
+
+    for(int i = 0; i < contador; i++){
+        int cont = 0;
+
+        for (int j = peniel[i].salario; j >= SL_MIN; j -= SL_MIN){
+            cont++;
+        }
+        info_cadastro(peniel, i);
+        printf("%s recebe, %d Salarios Minimos\n\n", peniel[i].nome, cont);
+    }
+}
+
+void listar_todos(Cadastro *peniel, int contador){
+    for(int i = 0; i < contador; i++)
+        info_cadastro(peniel, i);
+}
+void listar_escolher(Cadastro *peniel, int contador){
+    char temp[20];
+    printf("Mais informacao sobre: (Digite o nome)... ");
+    readChar(temp, 20);
+    int id = pesquisar(peniel, 0, contador-1, temp);
+    
+    if(id > -1)
+        info_cadastro(peniel, id);
+    else
+        printf("Registro nao encontrado.");
+}
+void deletar(Cadastro *peniel, int *contador){
+    char temp[20];
+    printf("Deletar: (Digite o nome)... ");
+    readChar(temp, 20);
+    int id = pesquisar(peniel, 0, *contador-1, temp);
+
+    if(id > -1){
+        char resposta = 'n';
+        setbuf(stdin,NULL);
+        printf("\nDeseja deletar? s/n : ");
+        resposta = getchar();
+
+        if(toupper(resposta)=='S'){
+            printf("\n");
+            for(int i = id; i < *contador; i++)peniel[id] = peniel[id+1];
+
+            (*contador)--;
+            printf("\nDeletado.");
+            setbuf(stdin,NULL);
+        }
+    }
+    else    
+        printf("Nao encontrado. ");
+}
+void alterar(Cadastro *peniel, int contador){
+    char temp[20];
+    printf("Alterar qual pessoa? (Digite o nome) ");
+    readChar(temp, 20);
+    int id = pesquisar(peniel, 0, contador-1, temp);
+
+    if (id > -1)
+        peniel[id] = cadastro_manual();
+    else
+        printf("Nao encontrado. ");
+}
+
+int main(){
+    srand(time(NULL));
+    Cadastro peniel[LIMITE];
+    int contador = 0;
+    
+    int resp = -1;
+    while(resp != 11){
+        do{
+            clear();
+            printf("\t\t\t\t\t||==============================================||\n");
+            printf("\t\t\t\t\t||== [0] - PREENCHER ALEATORIO (TUDO)         ==||\n");
+            printf("\t\t\t\t\t||==                                          ==||\n");
+            printf("\t\t\t\t\t||== [1] - Cadastrar [%2d/%2d]                  ==||\n", contador, LIMITE);
+            printf("\t\t\t\t\t||== [2] - Listar(TODOS)                      ==||\n");
+            printf("\t\t\t\t\t||== [3] - Listar(ESCOLHER)                   ==||\n");
+            printf("\t\t\t\t\t||== [4] - Deletar                            ==||\n");
+            printf("\t\t\t\t\t||== [5] - Alterar                            ==||\n");
+            printf("\t\t\t\t\t||==                                          ==||\n");
+            printf("\t\t\t\t\t||== [6] - Salario por categoria              ==||\n");
+            printf("\t\t\t\t\t||== [7] - Salario maior/menor                ==||\n");
+            printf("\t\t\t\t\t||== [8] - Media de idade                     ==||\n");
+            printf("\t\t\t\t\t||== [9] - Qtd fun. que recebe salario minimo ==||\n");
+            printf("\t\t\t\t\t||== [10] - Fun. Mais novo/ Mais velho        ==||\n");
+            printf("\t\t\t\t\t||==                                          ==||\n");
+            printf("\t\t\t\t\t||== [11] - Desligar Programa                 ==||\n");
+            printf("\t\t\t\t\t||==============================================||\n");
+            printf("\t\t\t\t\t||                                              ||\n");
+            printf("\t\t\t\t\t|| Digite uma opcao: [0-11]: ");
+            scanf("%d", &resp);
+
+        }while(resp < 0 || resp > 11);
+
+        switch(resp){
+            case 0: //Cadastro alatorio
+                cleanBuffer();
+                for(int i = 0; i < LIMITE; i++){
+                    peniel[i] = cadastro_automatico();
+                    contador += 1;
+                    ordenar(peniel, contador-1);
+                }
+                
+                printf("\nCadastro automatico, concluido com sucesso.");
+                getchar();
+                break;
+            
+            case 1: //Cadastro Manual
+                clear();
+                cleanBuffer();
+                if(contador < LIMITE){
+                    peniel[contador] = cadastro_manual();
+                    contador += 1;
+                    ordenar(peniel, contador-1);
+                    printf("\nCadastro manual, concluido com sucesso."); 
+                    getchar();
+
+                }else{printf("\nVoce antigiu o limitie [%d/%d] ", contador, LIMITE);getchar();}
+                break;
+                
+            case 2: //Listar (Todos)
+                clear();
+                cleanBuffer();
+                listar_todos(peniel, contador);
+                getchar();
+                break;
+            
+            case 3: //Listar (Escolher)
+                clear();
+                cleanBuffer();
+                listar_escolher(peniel, contador);
+                getchar();
+                break;
+            
+            case 4: //Deletar
+                clear();
+                cleanBuffer();
+                deletar(peniel, &contador);
+                getchar();
+                break;
+            
+            case 5: //Alterar
+                clear();    
+                cleanBuffer();
+                alterar(peniel, contador);
+                getchar();
+                break;
+            case 6: //Salario por categoria
+                clear();
+                cleanBuffer();
+                salarioPor_Categoria(peniel, contador);
+                getchar();
+                break;
+            case 7: //Salario maior/menor
+                clear();
+                cleanBuffer();
+                salarioPor_Categoria_MaiorMenor(peniel, contador);
+                getchar();
+                break;
+            case 8: //Media de idade
+                clear();
+                cleanBuffer();
+                mediaPor_Categoria_Idade(peniel, contador);
+                getchar();
+                break;
+            case 9: //Qtd. Fun. recebe salario minimo
+                clear();
+                cleanBuffer();
+                qtdFun_Recebe_SlrMinimo(peniel, contador);
+                getchar();
+                break;
+            case 10: //Fun. Mais novo/Mais velho
+                clear();
+                cleanBuffer();
+                fun_mais_novo(peniel, contador);
+                getchar();
+                break;
+        }
+    }
+    return 0;
+}
