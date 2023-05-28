@@ -1,0 +1,39 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<time.h>
+
+char* cria_nome(){ //Criador de nomes aleatorios.
+    char* nomes[] = {"Joao", "Maria", "Pedro", "Ana", "Lucas", "Julia", "Gustavo", "Carla", "Felipe", "Renata"};
+    char* sobrenomes[] = {"Silva", "Santos", "Souza", "Costa", "Pereira", "Oliveira", "Rodrigues", "Almeida", "Ferreira", "Gomes"};
+    int n_nomes = sizeof(nomes) / sizeof(nomes[0]);
+    int n_sobrenomes = sizeof(sobrenomes) / sizeof(sobrenomes[0]);
+
+    char* nome_completo = malloc((strlen(nomes[rand() % n_nomes]) + strlen(sobrenomes[rand() % n_sobrenomes]) + 2) * sizeof(char)); 
+    sprintf(nome_completo, "%s %s \n", nomes[rand() % n_nomes], sobrenomes[rand() % n_sobrenomes]);
+
+    return nome_completo;
+}
+
+void verifca_ponteiro(FILE *ponteiroArquivo){
+    if (ponteiroArquivo == NULL){
+        printf("Erro...");
+        exit(1); //Encerra o programa 
+    }
+}
+
+int main (){
+    srand(time(NULL));
+    FILE *file;
+    int qtd_alunos = 10;
+    
+    // a. 
+    file = fopen("Alunos.txt","w");
+    verifca_ponteiro(file);
+    for(int i = 0; i < qtd_alunos; i++)
+        fprintf(file, "%s", cria_nome());
+
+    fclose(file);
+
+    return 0;
+}
