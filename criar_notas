@@ -1,0 +1,33 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<time.h>
+
+void verifca_ponteiro(FILE *ponteiroArquivo){
+    if (ponteiroArquivo == NULL){
+        printf("Erro...");
+        exit(1); //Encerra o programa 
+    }
+}
+
+float notas(){
+    float num_temp = (float)((rand()%81)+20)/10;
+    return num_temp;
+}
+
+int main(){
+    srand(time(NULL));
+    FILE *file;
+    int qtd_alunos = 10;
+
+    // b.
+    file = fopen("Notas.txt","w");
+    verifca_ponteiro(file);
+
+    for(int i = 0; i < qtd_alunos; i++)
+        fprintf(file,"%.1f / %.1f\n", notas(), notas());
+
+    fclose(file);
+
+    return 0;
+}
