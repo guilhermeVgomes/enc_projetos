@@ -1,0 +1,70 @@
+/*
+    Projeto Bimestral 2: parte 1
+
+    Feito por: Guilherme Gomes 
+    Código: 05222-048.  
+
+    Alunos:
+    Carlos Eduardo 	    05222-049
+    Guilherme Gomes 	05222-048 
+    João Mota		    05222-014
+    Rafael Rosa 		05222-039
+*/
+
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+
+void verifca_ponteiro(FILE *ponteiroArquivo){
+    if (ponteiroArquivo == NULL){
+        printf("Erro...");
+        exit(1); //Encerra o programa 
+    }
+}
+
+typedef struct{
+    char nome[20];
+    float nota_1, nota_2;
+    float media;
+
+}Projeto;
+
+void calcular_media(Projeto *aluno){
+    aluno->media = (aluno->nota_1 + aluno->nota_2) / 2;
+}
+
+int main (){
+    FILE *file_nomes, *file_notas, *file_media;
+    int qtd_alunos = 10;
+    Projeto aluno[qtd_alunos];
+
+    //c.
+    file_nomes = fopen("Alunos.txt","r");
+    file_notas = fopen("Notas.txt", "r");
+    file_media = fopen("Medias.txt","w");
+
+    verifca_ponteiro(file_media);
+    verifca_ponteiro(file_nomes);
+    verifca_ponteiro(file_notas);
+
+    fprintf(file_media, " ==== Nome ============== Media ==\n");
+
+    for( int i = 0; i <  qtd_alunos; i++){
+        char nome[15], sobrenome[15];
+        fscanf(file_nomes, "%s %s", nome, sobrenome);
+        sprintf(aluno[i].nome, "%s %s", nome, sobrenome);
+
+        fscanf(file_notas, "%f / %f", &aluno[i].nota_1, &aluno[i].nota_2);
+        calcular_media(&aluno[i]);
+
+        fprintf(file_media, " == %-20s -> %.1f ==\n", aluno[i].nome, aluno[i].media);
+    }
+
+    fprintf(file_media, " =================================\n");
+    
+    fclose(file_nomes); 
+    fclose(file_notas);
+    fclose(file_media);
+
+    return 0;
+}
